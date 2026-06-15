@@ -73,4 +73,4 @@ The system provides:
 
 ## Project Status
 
-Proposal Phase
+Requirements Analysis Phase
