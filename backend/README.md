@@ -1,8 +1,11 @@
-# Backend
+# AI Study Assistant Backend
 
-This folder will contain:
-- Express.js server
-- APIs
-- Authentication
-- Database connection
-- AI integration
+Backend for the AI Study Assistant Platform.
+
+## Tech Stack
+
+- Node.js
+- Express.js
+- MongoDB
+- JWT
+- bcrypt
