@@ -11,7 +11,9 @@ app.get("/",(req,res)=>{
 });
 
 const authRoutes=require("./routes/authRoutes");
+const plannerRoutes=require("./routes/plannerRoutes");
 
 app.use("/api/auth",authRoutes);
+app.use("/api/planner",plannerRoutes);
 
 module.exports=app;
