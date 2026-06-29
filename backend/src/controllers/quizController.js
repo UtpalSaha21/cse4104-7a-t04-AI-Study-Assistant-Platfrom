@@ -1,77 +1,97 @@
 const Quiz = require("../models/Quiz");
+const ai = require("../config/gemini");
 
-// Dummy Quiz Generator
-exports.generateQuiz = async(req,res)=>{
+exports.generateQuiz = async (req, res) => {
+    try {
 
-    try{
+        const { topic, difficulty } = req.body;
 
-        const {topic,difficulty}=req.body;
-
-        if(!topic){
-
+        if (!topic) {
             return res.status(400).json({
-                success:false,
-                message:"Topic is required"
+                success: false,
+                message: "Topic is required"
             });
+        }
 
+        const prompt = `
+                            Generate 5 multiple choice questions.
+
+                            Topic: ${topic}
+                            Difficulty: ${difficulty || "Medium"}
+
+                            Return ONLY a valid JSON array.
+
+                            Example:
+
+                            [
+                            {
+                                "question": "What is Java?",
+                                "options": [
+                                "Programming Language",
+                                "Operating System",
+                                "Browser",
+                                "Database"
+                                ],
+                                "correctAnswer": "Programming Language"
+                            }
+                            ]
+                            `;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt
+        });
+
+        let text = response.text;
+
+        // Remove markdown if Gemini returns it
+        text = text
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
+
+        let questions;
+
+        try {
+            questions = JSON.parse(text);
+        } catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: "AI returned an invalid quiz format. Please try again."
+            });
         }
 
         const quiz = await Quiz.create({
 
-            user:req.user.id,
+            user: req.user.id,
 
             topic,
 
-            difficulty,
+            difficulty: difficulty || "Medium",
 
-            questions:[
-
-                {
-                    question:`What is ${topic}?`,
-                    options:[
-                        "Option A",
-                        "Option B",
-                        "Option C",
-                        "Option D"
-                    ],
-                    correctAnswer:"Option A"
-                },
-
-                {
-                    question:`Which statement about ${topic} is correct?`,
-                    options:[
-                        "Statement A",
-                        "Statement B",
-                        "Statement C",
-                        "Statement D"
-                    ],
-                    correctAnswer:"Statement B"
-                }
-
-            ]
+            questions
 
         });
 
         res.status(201).json({
 
-            success:true,
+            success: true,
             quiz
 
         });
 
-    }
+    } catch (error) {
 
-    catch(error){
+        console.error(error);
 
         res.status(500).json({
 
-            success:false,
-            message:error.message
+            success: false,
+            message: error.message
 
         });
 
     }
-
 };
 
 exports.getQuizHistory = async(req,res)=>{

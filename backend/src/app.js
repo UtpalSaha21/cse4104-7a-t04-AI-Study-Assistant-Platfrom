@@ -16,6 +16,15 @@ const chatRoutes = require("./routes/chatRoutes");
 const quizRoutes=require("./routes/quizRoutes");
 const summaryRoutes=require("./routes/summaryRoutes");
 
+const rateLimit = require("express-rate-limit");
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100
+});
+
+app.use(limiter);
+
 app.use("/api/auth",authRoutes);
 app.use("/api/planner",plannerRoutes);
 app.use("/api/chat",chatRoutes);

@@ -18,9 +18,17 @@ exports.generateSummary = async(req,res)=>{
 
         }
 
-        // Dummy summary
-        const generatedSummary =
-            "This is a dummy AI summary. It will be replaced with Gemini AI later.";
+        const ai = require("../config/gemini");
+
+        const response = await ai.models.generateContent({
+
+            model:"gemini-2.5-flash",
+
+            contents:`Summarize this text:\n\n${inputText}`
+
+        });
+
+        const generatedSummary = response.text;
 
         const summary = await Summary.create({
 

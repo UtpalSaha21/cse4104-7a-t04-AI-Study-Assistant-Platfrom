@@ -18,8 +18,17 @@ exports.askAI = async (req,res)=>{
 
         }
 
-        // Dummy AI response (Gemini will replace this later)
-        const aiResponse = `AI Response for: ${question}`;
+        const ai = require("../config/gemini");
+
+        const response = await ai.models.generateContent({
+
+            model:"gemini-2.5-flash",
+
+            contents:question
+
+        });
+
+        const aiResponse = response.text;
 
         const chat = await ChatHistory.create({
 
