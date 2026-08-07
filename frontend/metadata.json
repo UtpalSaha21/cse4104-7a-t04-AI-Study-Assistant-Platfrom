@@ -1,0 +1,6 @@
+{
+  "name": "AI Study Assistant",
+  "description": "An AI-powered academic dashboard and study assistant designed for university students, featuring AI tutoring, note summarization, smart scheduling, and interactive study assessments.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
