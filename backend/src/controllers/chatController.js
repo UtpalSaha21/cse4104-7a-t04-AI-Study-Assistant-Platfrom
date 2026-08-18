@@ -1,6 +1,7 @@
 const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
 const ai = require("../config/gemini");
+const handleAIError = require("../services/aiErrorHandler");
 
 // Ask AI (Dummy Version)
 exports.askAI = async (req, res) => {
@@ -125,6 +126,15 @@ exports.askAI = async (req, res) => {
             aiResponse += chunk.text;
         }
 
+        aiResponse = aiResponse.trim();
+
+        if (!aiResponse) {
+            return res.status(500).json({
+                success: false,
+                message: "The AI service returned an empty response. Please try again."
+            });
+        }
+
         // Save assistant message
         const assistantMessage = await Message.create({
 
@@ -151,12 +161,7 @@ exports.askAI = async (req, res) => {
 
     catch (error) {
 
-        res.status(500).json({
-
-            success: false,
-            message: error.message
-
-        });
+        return handleAIError(error, res);
 
     }
 

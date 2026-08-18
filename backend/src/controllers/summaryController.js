@@ -1,6 +1,7 @@
 const Summary = require("../models/Summary");
 const ai = require("../config/gemini");
 const { uploadPdf } = require("../services/geminiFile");
+const handleAIError = require("../services/aiErrorHandler");
 
 // Generate Summary
 exports.generateSummary = async (req, res) => {
@@ -30,7 +31,14 @@ exports.generateSummary = async (req, res) => {
 
         });
 
-        const generatedSummary = response.text;
+        const generatedSummary = response.text?.trim();
+
+        if (!generatedSummary) {
+            return res.status(500).json({
+                success: false,
+                message: "The AI service returned an empty summary. Please try again."
+            });
+        }
 
         const summary = await Summary.create({
 
@@ -55,12 +63,7 @@ exports.generateSummary = async (req, res) => {
 
     catch (error) {
 
-        res.status(500).json({
-
-            success: false,
-            message: error.message
-
-        });
+        return handleAIError(error, res);
 
     }
 
@@ -146,6 +149,20 @@ exports.generateSummaryFromPDF = async (req, res) => {
             });
         }
 
+        if (
+            !result ||
+            typeof result !== "object" ||
+            typeof result.title !== "string" ||
+            typeof result.summary !== "string" ||
+            !Array.isArray(result.keyPoints) ||
+            result.keyPoints.length === 0
+        ) {
+            return res.status(500).json({
+                success: false,
+                message: "AI returned an incomplete summary format."
+            });
+        }
+
         // Ensure all fields exist
         result.title = result.title || "Untitled";
         result.category = result.category || "General";
@@ -182,12 +199,7 @@ exports.generateSummaryFromPDF = async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
-
-        return res.status(500).json({
-            success: false,
-            message: err.message
-        });
+        return handleAIError(error, res);
     }
 };
 

@@ -117,65 +117,59 @@ export default function Quizzes() {
   };
 
   const handleGenerateQuiz = async (e) => {
+  e.preventDefault();
 
-    e.preventDefault();
-    try {
+  setIsLoading(true);
+  setApiError("");
 
-      let res;
+  try {
+    let res;
 
-      if (uploadedFile) {
+    if (uploadedFile) {
+      const formData = new FormData();
 
-        const formData = new FormData();
+      formData.append("pdf", uploadedFile);
+      formData.append("count", count);
+      formData.append("difficulty", difficulty);
 
-        formData.append("pdf", uploadedFile);
-
-        formData.append("count", count);
-
-        formData.append("difficulty", difficulty);
-
-        res = await api.post(
-          "/quiz/generate-from-pdf",
-          formData
-        );
-
-      } else {
-
-        res = await api.post(
-          "/quiz/generate",
-          {
-            topic,
-            difficulty,
-            count
-          }
-        );
-
-      }
-
-      setCurrentQuiz(res.data.quiz);
-
-      setQuestions(res.data.quiz.questions);
-
-      setCurrentIdx(0);
-
-      setAnswers({});
-
-      setQuizResult(null);
-
-      loadQuizHistory();
-
-      alert("Quiz generated successfully!");
-
+      res = await api.post(
+        "/quiz/generate-from-pdf",
+        formData
+      );
+    } else {
+      res = await api.post(
+        "/quiz/generate",
+        {
+          topic: subject,
+          difficulty,
+          count
+        }
+      );
     }
 
-    catch (err) {
+    setCurrentQuiz(res.data.quiz);
+    setQuestions(res.data.quiz.questions);
+    setCurrentIdx(0);
+    setAnswers({});
+    setQuizResult(null);
 
-      console.log(err);
+    await loadQuizHistory();
 
-      alert("Failed to generate quiz.", "error");
+    alert("Quiz generated successfully!");
 
-    }
+  } catch (err) {
+    console.error("Quiz generation error:", err);
 
-  };
+    const message =
+      err.response?.data?.message ||
+      "Failed to generate quiz. Please try again.";
+
+    setApiError(message);
+
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleSubmitQuiz = async () => {
 
@@ -291,13 +285,18 @@ export default function Quizzes() {
   };
 
   const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setUploadedFileName(e.dataTransfer.files[0].name);
-    }
-  };
+  e.preventDefault();
+  e.stopPropagation();
+
+  setDragActive(false);
+
+  const file = e.dataTransfer.files?.[0];
+
+  if (!file) return;
+
+  setUploadedFile(file);
+  setUploadedFileName(file.name);
+};
 
   const handleFileChange = (e) => {
 

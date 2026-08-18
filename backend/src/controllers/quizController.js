@@ -1,6 +1,7 @@
 const Quiz = require("../models/Quiz");
 const ai = require("../config/gemini");
 const { uploadPdf } = require("../services/geminiFile");
+const handleAIError = require("../services/aiErrorHandler");
 
 exports.generateQuiz = async (req, res) => {
     try {
@@ -68,6 +69,30 @@ exports.generateQuiz = async (req, res) => {
             });
         }
 
+        if (!Array.isArray(questions) || questions.length === 0) {
+            return res.status(500).json({
+                success: false,
+                message: "AI returned an empty or invalid quiz."
+            });
+        }
+
+        const invalidQuestion = questions.some((question) => {
+            return (
+                !question.question ||
+                !Array.isArray(question.options) ||
+                question.options.length !== 4 ||
+                !question.correctAnswer ||
+                !question.options.includes(question.correctAnswer)
+            );
+        });
+
+        if (invalidQuestion) {
+            return res.status(500).json({
+                success: false,
+                message: "AI returned an incomplete or invalid quiz format."
+            });
+        }
+
         const quiz = await Quiz.create({
 
             user: req.user.id,
@@ -89,14 +114,7 @@ exports.generateQuiz = async (req, res) => {
 
     } catch (error) {
 
-        console.error(error);
-
-        res.status(500).json({
-
-            success: false,
-            message: error.message
-
-        });
+        return handleAIError(error, res);
 
     }
 };
@@ -158,6 +176,30 @@ exports.generateQuizFromPDF = async (req, res) => {
             });
         }
 
+        if (!Array.isArray(questions) || questions.length === 0) {
+            return res.status(500).json({
+                success: false,
+                message: "AI returned an empty or invalid quiz."
+            });
+        }
+
+        const invalidQuestion = questions.some((question) => {
+            return (
+                !question.question ||
+                !Array.isArray(question.options) ||
+                question.options.length !== 4 ||
+                !question.correctAnswer ||
+                !question.options.includes(question.correctAnswer)
+            );
+        });
+
+        if (invalidQuestion) {
+            return res.status(500).json({
+                success: false,
+                message: "AI returned an incomplete or invalid quiz format."
+            });
+        }
+
         const quiz = await Quiz.create({
             user: req.user.id,
             topic: req.file.originalname,
@@ -172,12 +214,7 @@ exports.generateQuizFromPDF = async (req, res) => {
 
     } catch (error) {
 
-        console.error(error);
-
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        return handleAIError(error, res);
 
     }
 

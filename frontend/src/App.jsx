@@ -475,7 +475,7 @@ export default function App() {
     );
   };
 
-  // 2. Profile/Settings Page Render matching Screenshot 7 exactly
+  // 2. Profile/Settings Page
   const renderProfile = () => {
     return (
       <Profile
