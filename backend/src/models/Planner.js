@@ -1,43 +1,38 @@
 const mongoose = require("mongoose");
 
-const plannerSchema = new mongoose.Schema(
-{
-    title:{
-        type:String,
-        required:true,
-        trim:true
+const plannerSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true
     },
 
-    description:{
-        type:String,
-        required:true
+    day: {
+        type: String,
+        required: true
     },
 
-    subject:{
-        type:String,
-        required:true
+    date: {
+        type: String
     },
 
-    deadline:{
-        type:Date,
-        required:true
+    time: {
+        type: String,
+        required: true
     },
 
-    status:{
-        type:String,
-        enum:["Pending","Completed"],
-        default:"Pending"
+    priority: {
+        type: String,
+        enum: ["High", "Medium", "Low"],
+        default: "Medium"
     },
 
-    user:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required:true
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     }
-
-},
-{
-    timestamps:true
+}, {
+    timestamps: true
 });
 
-module.exports = mongoose.model("Planner",plannerSchema);
+module.exports = mongoose.model("Planner", plannerSchema);

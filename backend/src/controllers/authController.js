@@ -57,15 +57,16 @@ exports.login = async(req,res)=>{
 
     try{
 
-        const {email,password}=req.body;
+        const emailAddress = req.body.email?.trim().toLowerCase();
+        const { password } = req.body;
 
-        const user = await User.findOne({email});
+        const user = await User.findOne({ email: emailAddress });
 
         if(!user){
 
             return res.status(404).json({
 
-                message:"User not found"
+                message:"Email not found. Please check your email address."
 
             });
 
@@ -77,7 +78,7 @@ exports.login = async(req,res)=>{
 
             return res.status(401).json({
 
-                message:"Invalid credentials"
+                message:"Wrong password. Please try again."
 
             });
 
@@ -126,9 +127,90 @@ exports.getProfile = async (req, res) => {
 
         const user = await User.findById(req.user.id).select("-password");
 
+        const userObj = user.toObject();
+
+        userObj.fullName = userObj.name;
+
         res.status(200).json({
             success: true,
             user
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+};
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const { name, avatarUrl } = req.body;
+        const updates = { name };
+
+        if (typeof avatarUrl === "string") {
+            updates.avatarUrl = avatarUrl;
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            updates,
+            {
+                new: true,
+                runValidators: true
+            }
+        ).select("-password");
+
+        res.json({
+            success: true,
+            message: "Profile updated successfully",
+            user
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
+};
+
+exports.changePassword = async (req, res) => {
+
+    try {
+
+        const {
+            currentPassword,
+            newPassword
+        } = req.body;
+
+        const user = await User.findById(req.user.id);
+
+        const isMatch = await bcrypt.compare(
+            currentPassword,
+            user.password
+        );
+
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Current password is incorrect"
+            });
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+
+        await user.save();
+
+        res.json({
+            success: true,
+            message: "Password updated successfully"
         });
 
     } catch (error) {

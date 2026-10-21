@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const summarySchema = new mongoose.Schema({
-
+const summarySchema = new mongoose.Schema(
+{
     user:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
@@ -13,18 +13,18 @@ const summarySchema = new mongoose.Schema({
         required:true
     },
 
-    inputText:{
-        type:String,
-        required:true
-    },
+    category:String,
 
-    generatedSummary:{
-        type:String,
-        required:true
-    }
+    summary:String,
 
-},{
+    keyPoints:[String],
+
+    context:String,
+
+    fileName:String
+},
+{
     timestamps:true
 });
 
-module.exports = mongoose.model("Summary",summarySchema);
+module.exports = mongoose.model("Summary", summarySchema);
