@@ -14,7 +14,7 @@ exports.askAI = async (req, res) => {
 
             return res.status(400).json({
                 success: false,
-                message: "Conversation ID and question are required"
+                message: "Conversation ID and Question are required"
             });
 
         }
